@@ -72,3 +72,12 @@ Include a very brief summary of your project here. Images are encouraged, along 
 - **Design Achievement 1**: I tested my application using screen reading software, and found that...
 - **Design Achievement 2**: I followed best practices for accessibility, including providing alt attributes for images and using semantic HTML. There are no `<div>` or `<span>` elements in my document.
 - **Design Achievement 3**: We tested the application with n=X users, finding that...
+
+
+# SQLite3 with Sequelize
+A simple list app that demonstrates creating and interacting with a SQLite3 database using the Sequelize ORM.
+Started by remixing https://glitch.com/~sqlite3-db
+![](https://cdn.glitch.com/5dd56de5-79af-444e-a17e-bd60230962eb%2FsqliteDBGIF.gif)
+
+## Getting Started
+Remix and specify a username and password for your database by setting `DB_USER` and `DB_PASS` in `.env`.
