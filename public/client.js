@@ -11,11 +11,12 @@ const login = function( e ) {
       method:'POST',
       body:JSON.stringify({ username: input1.value, password: input2.value }),
       headers: { 'Content-Type': 'application/json' } 
-     })
+     });
+
     //.then( res => res.json() )
     //.then(console.log);
-    .then(res => res.text())          // convert to plain text
-    .then(text => console.log(text));
+    //.then(res => res.text())          // convert to plain text
+    //.then(text => console.log(text));
     //debugger;
 
     

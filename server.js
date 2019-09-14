@@ -134,11 +134,12 @@ app.post(
   '/login',
   passport.authenticate( 'local', {successRedirect: '/main.html',
                                                     failureRedirect: '/index.html',
-                                                    failureFlash: false } ),
-  function( req, res ) {
-    console.log( 'user:', req.user )
-    res.json({ status:true, message: "why" })
-  }
+                                                    failureFlash: false } )
+  /*function( req, res ) {
+    console.log( 'user:', req.user );
+    res.json({ status:true })
+
+  }*/
 );
 
 app.get("/users", function (request, response) {
