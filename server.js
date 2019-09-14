@@ -30,7 +30,7 @@ let sequelize = new Sequelize('database', process.env.DB_USER, process.env.DB_PA
   },
     // Security note: the database is saved to the file `database.sqlite` on the local filesystem. It's deliberately placed in the `.data` directory
     // which doesn't get copied if someone remixes the project.
-  storage: '.data/database.sqlite'
+  storage: 'resources/database.sqlite'
 });
 
 // authenticate with the database
@@ -65,6 +65,7 @@ function setup(){
 }
 
 // http://expressjs.com/en/starter/static-files.html
+app.use(express.static('./views'));
 app.use(express.static('./'));
 
 // http://expressjs.com/en/starter/basic-routing.html
@@ -75,15 +76,20 @@ app.get("/", function (request, response) {
 // all authentication requests in passwords assume that your client
 // is submitting a field named "username" and field named "password".
 // these are both passed as arugments to the authentication strategy.
-const myLocalStrategy = function( username, password, done ) {
+const myLocalStrategy = async function( username, password, done ) {
   // find the first item in our users array where the username
   // matches what was sent by the client. nicer to read/write than a for loop!
-  const user = User.findAll({
+  let pass = "";
+   const user = User.findOne({
     where: {
       username: username
     }
-  });
-  
+  }).then(user => {
+      console.log(user.get('password'));
+      pass = user.get('password')
+    });
+   await user;
+    console.log(pass);
   // if user is undefined, then there was no match for the submitted username
   if( user === undefined ) {
     /* arguments to done():
@@ -91,29 +97,49 @@ const myLocalStrategy = function( username, password, done ) {
      - authentication status
      - a message / other data to send to client
     */
+    console.log("1");
     return done( null, false, { message:'user not found' })
-  }else if( user.password === password ) {
+  }else if( pass === password ) {
     // we found the user and the password matches!
     // go ahead and send the userdata... this will appear as request.user
     // in all express middleware functions.
+      console.log("2");
     return done( null, { username, password })
   }else{
     // we found the user but the password didn't match...
+      console.log("3");
     return done( null, false, { message: 'incorrect password' })
   }
-}
+};
 
-passport.use( new Local( myLocalStrategy ) )
-passport.initialize()
+passport.use( new Local( myLocalStrategy ) );
+app.use(passport.initialize());
+
+passport.serializeUser( ( user, done ) => done( null, user.username ) );
+
+// "name" below refers to whatever piece of info is serialized in seralizeUser,
+// in this example we're using the username
+passport.deserializeUser( ( username, done ) => {
+    const user = users.find( u => u.username === username );
+    console.log( 'deserializing:', name )
+
+    if( user !== undefined ) {
+        done( null, user )
+    }else{
+        done( null, false, { message:'user not found; session not restored' })
+    }
+});
 
 app.post( 
   '/login',
-  passport.authenticate( 'local' ),
+  passport.authenticate( 'local', {successRedirect: '/main.html',
+                                                    failureRedirect: '/index.html',
+                                                    failureFlash: false } ),
   function( req, res ) {
     console.log( 'user:', req.user )
-    res.json({ status:true })
+    res.json({ status:true, message: "why" })
   }
-)
+);
 
 app.get("/users", function (request, response) {
   let dbUsers=[];
