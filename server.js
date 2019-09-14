@@ -2,15 +2,20 @@
 // where your node app starts
 
 // init project
+
 const express = require('express');
 const Sequelize = require('sequelize');
 const session = require('express-session');
 const passport = require('passport');
 const Local = require('passport-local').Strategy;
 const bodyParser = require('body-parser');
+const path  = require('path');
+
+
 const app = express();
 
 app.use(bodyParser.json());
+
 
 // default user list
 let users = [
@@ -143,7 +148,9 @@ app.post(
 );
 
 app.get("/main", function (request, response){
-    response.render('main.html');
+    //console.log(__dirname + '/views/main.html');
+    //response.render(__dirname + '/views/main.html');
+    response.sendFile(path.join(__dirname+'/views/main.html'));
 });
 
 app.get("/users", function (request, response) {
