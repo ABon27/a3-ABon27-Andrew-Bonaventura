@@ -132,15 +132,19 @@ passport.deserializeUser( ( username, done ) => {
 
 app.post( 
   '/login',
-  passport.authenticate( 'local', {successRedirect: '/main.html',
-                                                    failureRedirect: '/index.html',
-                                                    failureFlash: false } )
+  passport.authenticate( 'local', { successRedirect: '/main',
+                                                    failureRedirect: '/login',
+                                                    failureFlash: false } ),
   /*function( req, res ) {
-    console.log( 'user:', req.user );
-    res.json({ status:true })
-
+    //console.log( 'user:', req.user );
+    //res.json({ status:true };
+    res.redirect('/main');
   }*/
 );
+
+app.get("/main", function (request, response){
+    response.render('main.html');
+});
 
 app.get("/users", function (request, response) {
   let dbUsers=[];
