@@ -21,7 +21,13 @@ app.use(bodyParser.json());
 let users = [
       ["Employee","Employee"]
     ];
+let initItems = [
+    ["Employee", "Board", 5, "a1s2d3f4", "wooden planks"],
+    ["Employee", "Sticks", 10, "as1d3432", "wooden sticks"]
+    ];
 let User;
+let Inventory;
+let curUsername = "";
 
 // setup a new database
 // using database credentials set in .env
@@ -51,6 +57,24 @@ sequelize.authenticate()
         type: Sequelize.STRING
       }
     });
+
+    Inventory = sequelize.define('items', {
+        username: {
+            type: Sequelize.STRING
+        },
+        itemName: {
+            type: Sequelize.STRING
+        },
+        itemQuantity: {
+            type: Sequelize.INTEGER
+        },
+        itemID: {
+            type: Sequelize.STRING
+        },
+        itemDescription: {
+            type: Sequelize.STRING
+        }
+    });
     
     setup();
   })
@@ -66,8 +90,20 @@ function setup(){
       for(let i=0; i<users.length; i++){ // loop through all users
         User.create({ username: users[i][0], password: users[i][1]}); // create a new entry in the users table
       }
-    });  
-}
+    });
+  Inventory.sync({force: true})
+      .then(function(){
+          for(let i=0; i<initItems.length; i++) {
+              Inventory.create({
+                  username: initItems[i][0],
+                  itemName: initItems[i][1],
+                  itemQuantity: initItems[i][2],
+                  itemID: initItems[i][3],
+                  itemDescription: initItems[i][4]
+              })
+          }
+      });
+};
 
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static(__dirname + '/views'));
@@ -75,7 +111,6 @@ app.use(express.static(__dirname + '/'));
 
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", function (request, response) {
-    console.log('?????');
   response.sendFile(__dirname + '/views/index.html');
 });
 
@@ -110,6 +145,7 @@ const myLocalStrategy = async function( username, password, done ) {
     // go ahead and send the userdata... this will appear as request.user
     // in all express middleware functions.
       console.log("2");
+      curUsername = username;
     return done( null, { username, password })
   }else{
     // we found the user but the password didn't match...
@@ -153,6 +189,32 @@ app.get("/main", function (request, response){
     //response.render(__dirname + '/views/main.html');
     response.sendFile(path.join(__dirname+'/views/main.html/'));
 
+});
+
+app.post("/createItem", function(request, response){
+    //console.log(request.body.itemName);
+
+    Inventory.create({  username: curUsername,
+                        itemName: request.body.itemName,
+                        itemQuantity: request.body.itemQuantity,
+                        itemID: request.body.itemID,
+                        itemDescription: request.body.itemDescription});
+    response.sendStatus(200);
+});
+
+app.get("/getTable", function(request, response){
+   let invItems = [];
+   Inventory.findAll({
+       where: {
+           username: curUsername
+       }
+   }).then(function(items){
+       items.forEach(function(item) {
+           invItems.push([item.itemName, item.itemQuantity, item.itemID, item.itemDescription, item.id]);
+       });
+       response.json(invItems);
+       //response.send(["why", "you", "do", "dis"]);
+   })
 });
 
 app.get("/users", function (request, response) {

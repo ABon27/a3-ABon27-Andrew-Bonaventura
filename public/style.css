@@ -2,9 +2,7 @@
   box-sizing: border-box;
 }
 
-body {
-  background-image: url(https://cdn.glitch.com/1b6ba422-b77a-48e2-96fe-a31537973221%2Faqua-d9b59c89.png?v=1568317819225);
-}
+
 
 .errorLabelHidden{
   Display: flex;

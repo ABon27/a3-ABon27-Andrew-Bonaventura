@@ -14,7 +14,7 @@ const login = function( e ) {
      })
         .then(res => {
             window.location.href = res.url
-        })
+        });
 
     //.then( res => res.json() )
     //.then(console.log);
