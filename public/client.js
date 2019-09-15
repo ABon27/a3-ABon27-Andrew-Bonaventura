@@ -11,7 +11,10 @@ const login = function( e ) {
       method:'POST',
       body:JSON.stringify({ username: input1.value, password: input2.value }),
       headers: { 'Content-Type': 'application/json' } 
-     });
+     })
+        .then(res => {
+            window.location.href = res.url
+        })
 
     //.then( res => res.json() )
     //.then(console.log);

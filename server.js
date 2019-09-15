@@ -70,11 +70,12 @@ function setup(){
 }
 
 // http://expressjs.com/en/starter/static-files.html
-app.use(express.static('./views'));
-app.use(express.static('./'));
+app.use(express.static(__dirname + '/views'));
+app.use(express.static(__dirname + '/'));
 
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", function (request, response) {
+    console.log('?????');
   response.sendFile(__dirname + '/views/index.html');
 });
 
@@ -138,8 +139,8 @@ passport.deserializeUser( ( username, done ) => {
 app.post( 
   '/login',
   passport.authenticate( 'local', { successRedirect: '/main',
-                                                    failureRedirect: '/login',
-                                                    failureFlash: false } ),
+                                                    failureRedirect: '/',
+                                                    failureFlash: true } ),
   /*function( req, res ) {
     //console.log( 'user:', req.user );
     //res.json({ status:true };
@@ -150,7 +151,8 @@ app.post(
 app.get("/main", function (request, response){
     //console.log(__dirname + '/views/main.html');
     //response.render(__dirname + '/views/main.html');
-    response.sendFile(path.join(__dirname+'/views/main.html'));
+    response.sendFile(path.join(__dirname+'/views/main.html/'));
+
 });
 
 app.get("/users", function (request, response) {
