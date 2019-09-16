@@ -14,6 +14,7 @@
     "passport-local": "^1.0.0",
     "patternfly": "^3.59.4",
     "sequelize": "^6.0.0",
+    "serve-favicon": "^2.5.0",
     "sqlite3": "^4.1.0"
   },
   "keywords": [
@@ -22,5 +23,8 @@
     "sqlite3",
     "patternfly"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "connect-flash": "^0.1.1"
+  }
 }

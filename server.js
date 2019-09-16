@@ -10,12 +10,15 @@ const passport = require('passport');
 const Local = require('passport-local').Strategy;
 const bodyParser = require('body-parser');
 const path  = require('path');
+const flash = require('connect-flash');
+const favicon = require('serve-favicon')
 
 
 const app = express();
 
 app.use(bodyParser.json());
-
+console.log(path.join(__dirname, 'resources', 'favicon.ico'));
+app.use(favicon(path.join(__dirname, 'resources', 'favicon.ico')));
 
 
 // default user list
@@ -128,8 +131,12 @@ const myLocalStrategy = async function( username, password, done ) {
       username: username
     }
   }).then(user => {
-      console.log(user.get('password'));
-      pass = user.get('password')
+      if(user !== null) {
+          console.log(user.get('password'));
+          pass = user.get('password');
+      } else {
+          pass = "";
+    }
     });
    await user;
     console.log(pass);
@@ -160,6 +167,7 @@ passport.use( new Local( myLocalStrategy ) );
 app.use(passport.initialize());
 app.use( session({ secret:'cats cats cats', resave:false, saveUninitialized:false }) )
 app.use( passport.session() );
+app.use(flash());
 
 passport.serializeUser( ( user, done ) => done( null, user.username ) );
 
@@ -179,7 +187,7 @@ passport.deserializeUser( ( username, done ) => {
 app.post( 
   '/login',
   passport.authenticate( 'local', { successRedirect: '/main',
-                                                    failureRedirect: '/',
+                                                    failureRedirect: '/fail',
                                                     failureFlash: true } ),
   /*function( req, res ) {
     //console.log( 'user:', req.user );
@@ -187,6 +195,11 @@ app.post(
     res.redirect('/main');
   }*/
 );
+
+app.get('/fail', function(request, response){
+   request.flash('errorMessage', 'No errors, you\'re doing fine');
+   response.redirect('/');
+});
 
 app.get("/main", function (request, response){
     //console.log(__dirname + '/views/main.html');
