@@ -17,6 +17,7 @@ const app = express();
 app.use(bodyParser.json());
 
 
+
 // default user list
 let users = [
       ["Employee","Employee"]
@@ -157,6 +158,8 @@ const myLocalStrategy = async function( username, password, done ) {
 
 passport.use( new Local( myLocalStrategy ) );
 app.use(passport.initialize());
+app.use( session({ secret:'cats cats cats', resave:false, saveUninitialized:false }) )
+app.use( passport.session() );
 
 passport.serializeUser( ( user, done ) => done( null, user.username ) );
 
@@ -248,33 +251,11 @@ app.post('/deleteItem', function(request, response){
     }).then(response.send({}));
 });
 
-
-app.get("/users", function (request, response) {
-  let dbUsers=[];
-  User.findAll().then(function(users) { // find all entries in the users tables
-    users.forEach(function(user) {
-      dbUsers.push([user.firstName,user.lastName]); // adds their info to the dbUsers value
+app.post('/createAct', function(request, response) {
+    User.create({  username: request.body.username,
+        password: request.body.password
     });
-    response.send(dbUsers); // sends dbUsers back to the page
-  });
-});
-
-// creates a new entry in the users table with the submitted values
-app.post("/users", function (request, response) {
-  User.create({ firstName: request.query.fName, lastName: request.query.lName});
-  response.sendStatus(200);
-});
-
-// drops the table users if it already exists, populates new users table it with just the default users.
-app.get("/reset", function (request, response) {
-  setup();
-  response.redirect("/");
-});
-
-// removes all entries from the users table
-app.get("/clear", function (request, response) {
-  User.destroy({where: {}});
-  response.redirect("/");
+    response.sendStatus(200);
 });
 
 // listen for requests :)

@@ -42,7 +42,14 @@ const test = function(e){
     console.log("why");
 };
 
+const createAct = function(e){
+    e.preventDefault();
+    window.location.href = 'createAct.html';
+}
+
 window.onload = function() {
     const button1 = document.querySelector( '#loginButton' );
+    const button2 = document.querySelector('#createActButton');
     button1.onclick = login;
+    button2.onclick = createAct;
   };
