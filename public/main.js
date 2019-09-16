@@ -23,14 +23,40 @@ const makeTable = function(data){
         html+="<td>"+data[i][0]+"</td>";
         html+="<td>"+data[i][1]+"</td>";
         html+="<td>"+data[i][2]+"</td>";
-        html+="<td> <input class='button-primary'  type='button' value='View'></td>";
-        html+="<td> <input class='button-primary'  type='button' value='Edit'></td>";
-        html+="<td> <input class='button-primary'  type='button' value='Delete'></td>";
+        let des = {description: data[i][3].toString(), id: data[i][4]};
+        des = JSON.stringify(des);
+        html+="<td> <input class='button-primary'  type='button' value='View' onClick='viewDes(" + des + ")'></td>";
+        html+="<td> <input class='button-primary'  type='button' value='Edit' onClick='editRec(" + des + ")'></td>";
+        html+="<td> <input class='button-primary'  type='button' value='Delete' onClick='deleteRec(" + des + ")'></td>";
 
         html+="</tr>";
 
     }
     document.getElementById('tableBody').innerHTML = html;
+};
+
+const viewDes = function(des){
+    alert(des.description);
+};
+
+const editRec = function(des){
+    fetch('/editSwitch', {
+        method: 'POST',
+        body: JSON.stringify({id: des.id}),
+        headers: {'Content-Type': 'application/json'}
+    }).then(res => {
+        window.location.href = 'editItem.html';
+    });
+};
+
+const deleteRec = function(des){
+    fetch('/deleteItem', {
+        method: 'POST',
+        body: JSON.stringify({id: des.id}),
+        headers: {'Content-Type': 'application/json'}
+    }).then(res => {
+        window.location.href = 'main.html';
+    });
 };
 
 window.onload = function() {

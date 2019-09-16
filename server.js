@@ -28,6 +28,7 @@ let initItems = [
 let User;
 let Inventory;
 let curUsername = "";
+let curID = -1;
 
 // setup a new database
 // using database credentials set in .env
@@ -216,6 +217,37 @@ app.get("/getTable", function(request, response){
        //response.send(["why", "you", "do", "dis"]);
    })
 });
+
+app.post('/editSwitch', function(request, response){
+    curID = request.body.id;
+    response.sendFile(path.join(__dirname+'/views/editItem.html/'));
+});
+
+app.post('/updateItem', function(request, response){
+   Inventory.findOne({
+       where: {
+           id: curID
+       }
+   }).then(function(item){
+       item.update({
+           itemName: request.body.itemName,
+           itemQuantity: request.body.itemQuantity,
+           itemID: request.body.itemID,
+           itemDescription: request.body.itemDescription
+       });
+       curID = -1;
+       response.send({});
+   })
+});
+
+app.post('/deleteItem', function(request, response){
+    Inventory.destroy({
+        where: {
+            id: request.body.id
+        }
+    }).then(response.send({}));
+});
+
 
 app.get("/users", function (request, response) {
   let dbUsers=[];
