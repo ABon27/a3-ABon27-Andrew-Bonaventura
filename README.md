@@ -8,7 +8,7 @@ Sample Readme (delete the above when you're ready to submit, and modify the belo
 
 ## Your Web Application Title
 
-glitch link  http://a3-AndrewBonaventura.glitch.me
+glitch link  https://a3-abon27-andrew-bonaventura.glitch.me/
 
 This website is an inventory manager that is linked to an individual's account. This means that every different account 
 will have a different set of items associated with it.
