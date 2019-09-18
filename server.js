@@ -10,15 +10,17 @@ const passport = require('passport');
 const Local = require('passport-local').Strategy;
 const bodyParser = require('body-parser');
 const path  = require('path');
-const flash = require('connect-flash');
-const favicon = require('serve-favicon')
+const favicon = require('serve-favicon');
+const uncap = require('express-uncapitalize');
+const slash   = require('express-slash');
+const debug = require('express-debug');
 
 
 const app = express();
 
 app.use(bodyParser.json());
-console.log(path.join(__dirname, 'resources', 'favicon.ico'));
-app.use(favicon(path.join(__dirname, 'resources', 'favicon.ico')));
+
+
 
 
 // default user list
@@ -46,7 +48,7 @@ let sequelize = new Sequelize('database', process.env.DB_USER, process.env.DB_PA
   },
     // Security note: the database is saved to the file `database.sqlite` on the local filesystem. It's deliberately placed in the `.data` directory
     // which doesn't get copied if someone remixes the project.
-  storage: 'resources/database.sqlite'
+  storage: '.data/database.sqlite'
 });
 
 // authenticate with the database
@@ -89,14 +91,14 @@ sequelize.authenticate()
 
 // populate table with default users
 function setup(){
-  User.sync({force: true}) // We use 'force: true' in this example to drop the table users if it already exists, and create a new one. You'll most likely want to remove this setting in your own apps
+  User.sync({force: false}) // We use 'force: true' in this example to drop the table users if it already exists, and create a new one. You'll most likely want to remove this setting in your own apps
     .then(function(){
       // Add the default users to the database
       for(let i=0; i<users.length; i++){ // loop through all users
         User.create({ username: users[i][0], password: users[i][1]}); // create a new entry in the users table
       }
     });
-  Inventory.sync({force: true})
+  Inventory.sync({force: false})
       .then(function(){
           for(let i=0; i<initItems.length; i++) {
               Inventory.create({
@@ -111,13 +113,9 @@ function setup(){
 };
 
 // http://expressjs.com/en/starter/static-files.html
-app.use(express.static(__dirname + '/views'));
 app.use(express.static(__dirname + '/'));
 
-// http://expressjs.com/en/starter/basic-routing.html
-app.get("/", function (request, response) {
-  response.sendFile(__dirname + '/views/index.html');
-});
+
 
 // all authentication requests in passwords assume that your client
 // is submitting a field named "username" and field named "password".
@@ -132,14 +130,13 @@ const myLocalStrategy = async function( username, password, done ) {
     }
   }).then(user => {
       if(user !== null) {
-          console.log(user.get('password'));
           pass = user.get('password');
       } else {
           pass = "";
     }
     });
    await user;
-    console.log(pass);
+    
   // if user is undefined, then there was no match for the submitted username
   if( user === undefined ) {
     /* arguments to done():
@@ -147,69 +144,84 @@ const myLocalStrategy = async function( username, password, done ) {
      - authentication status
      - a message / other data to send to client
     */
-    console.log("1");
+    
     return done( null, false, { message:'user not found' })
   }else if( pass === password ) {
     // we found the user and the password matches!
     // go ahead and send the userdata... this will appear as request.user
     // in all express middleware functions.
-      console.log("2");
+      
       curUsername = username;
     return done( null, { username, password })
   }else{
     // we found the user but the password didn't match...
-      console.log("3");
+      
     return done( null, false, { message: 'incorrect password' })
   }
 };
 
 passport.use( new Local( myLocalStrategy ) );
+app.use( session({ secret:'cats cats cats', resave:false, saveUninitialized:false }) );
 app.use(passport.initialize());
-app.use( session({ secret:'cats cats cats', resave:false, saveUninitialized:false }) )
 app.use( passport.session() );
-app.use(flash());
+
+
+
 
 passport.serializeUser( ( user, done ) => done( null, user.username ) );
 
 // "name" below refers to whatever piece of info is serialized in seralizeUser,
 // in this example we're using the username
 passport.deserializeUser( ( username, done ) => {
-    const user = users.find( u => u.username === username );
-    console.log( 'deserializing:', name )
+    const user = User.findOne({
+    where: {
+      username: username
+    }
+  })
+    
+    console.log( 'deserializing:', username );
 
     if( user !== undefined ) {
-        done( null, user )
+        curUsername = username;
+        done( null, user );
     }else{
-        done( null, false, { message:'user not found; session not restored' })
+        done( null, false, { message:'user not found; session not restored' });
     }
 });
+
+//app.use(favicon("https://cdn.glitch.com/1b6ba422-b77a-48e2-96fe-a31537973221%2Ffavicon.ico?v=1568611668241"));
+
+// http://expressjs.com/en/starter/basic-routing.html
+app.get('/', function (request, response) {
+  if(request.user){
+    response.sendFile(__dirname + '/views/main.html');
+  }else{
+    response.sendFile(__dirname + '/views/index.html');
+  }
+});
+
 
 app.post( 
   '/login',
   passport.authenticate( 'local', { successRedirect: '/main',
                                                     failureRedirect: '/fail',
-                                                    failureFlash: true } ),
-  /*function( req, res ) {
-    //console.log( 'user:', req.user );
-    //res.json({ status:true };
-    res.redirect('/main');
-  }*/
+                                                    failureFlash: false} ),
+  
 );
 
 app.get('/fail', function(request, response){
-   request.flash('errorMessage', 'No errors, you\'re doing fine');
+   
    response.redirect('/');
 });
 
 app.get("/main", function (request, response){
-    //console.log(__dirname + '/views/main.html');
-    //response.render(__dirname + '/views/main.html');
-    response.sendFile(path.join(__dirname+'/views/main.html/'));
+    
+    response.sendFile(path.join(__dirname+'/views/main.html'));
 
 });
 
 app.post("/createItem", function(request, response){
-    //console.log(request.body.itemName);
+    
 
     Inventory.create({  username: curUsername,
                         itemName: request.body.itemName,
@@ -230,13 +242,13 @@ app.get("/getTable", function(request, response){
            invItems.push([item.itemName, item.itemQuantity, item.itemID, item.itemDescription, item.id]);
        });
        response.json(invItems);
-       //response.send(["why", "you", "do", "dis"]);
+       
    })
 });
 
 app.post('/editSwitch', function(request, response){
     curID = request.body.id;
-    response.sendFile(path.join(__dirname+'/views/editItem.html/'));
+    response.sendFile(path.join(__dirname+'/views/editItem.html'));
 });
 
 app.post('/updateItem', function(request, response){
@@ -252,7 +264,7 @@ app.post('/updateItem', function(request, response){
            itemDescription: request.body.itemDescription
        });
        curID = -1;
-       response.send({});
+       response.send(path.join(__dirname+'/views/main.html'));
    })
 });
 
@@ -270,6 +282,11 @@ app.post('/createAct', function(request, response) {
     });
     response.sendStatus(200);
 });
+
+
+app.use(uncap);
+app.use(slash);
+app.use(debug);
 
 // listen for requests :)
 let listener = app.listen(process.env.PORT || 3000, function () {
