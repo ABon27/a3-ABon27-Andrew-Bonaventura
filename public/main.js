@@ -1,6 +1,6 @@
 const addEntry = function(e){
     e.preventDefault()
-    window.location.href = 'createItem.html';
+    window.location.href = 'views/createItem.html';
 };
 
 const getTable = function(){
@@ -45,7 +45,7 @@ const editRec = function(des){
         body: JSON.stringify({id: des.id}),
         headers: {'Content-Type': 'application/json'}
     }).then(res => {
-        window.location.href = 'editItem.html';
+        window.location.href = '/views/editItem.html';
     });
 };
 
